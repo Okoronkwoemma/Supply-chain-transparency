@@ -54,36 +54,6 @@ All updates are stored on the blockchain and can be publicly verified.
 
 - **Minimal UI (MVP)**  
   Focus on functionality over design complexity.
-
----
-
-## 📁 Project Structure
-frontend/
-│
-├── src/
-│ ├── components/
-│ │ ├── WalletConnect.jsx
-│ │ ├── ProductForm.jsx
-│ │ ├── ProductList.jsx
-│ │ └── ProductTimeline.jsx
-│ │
-│ ├── pages/
-│ │ ├── Home.jsx
-│ │ ├── RegisterProduct.jsx
-│ │ └── Products.jsx
-│ │
-│ ├── services/
-│ │ └── blockchain.js
-│ │
-│ ├── App.jsx
-│ ├── main.jsx
-│ └── index.css
-│
-├── public/
-├── package.json
-└── README.md
-
-
 ---
 
 ## 🔄 How the System Works
