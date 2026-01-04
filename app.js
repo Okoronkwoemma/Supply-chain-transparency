@@ -3,9 +3,11 @@ const express = require("express");
 const mongoose = require("mongoose");
 const crypto = require("crypto");
 const Product = require("./models/product");
+const cors = require("cors");
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 // 1. DATABASE CONNECTION
 mongoose
