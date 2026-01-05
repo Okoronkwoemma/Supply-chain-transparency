@@ -13,7 +13,9 @@
   <body>
     <nav class="navbar">
       <div class="container nav-container">
-        <a href="index.html" class="logo">Supply<span>Chain</span></a>
+        <a href="index.html" class="logo">
+          <i class="fas fa-cubes"></i> Supply<span>Chain</span>
+        </a>
 
         <ul class="nav-links">
           <li>
@@ -35,14 +37,13 @@
         </ul>
 
         <div class="user-info">
-          <span>Current Role:</span>
           <span class="role-badge">Manufacturer</span>
         </div>
       </div>
     </nav>
 
-    <main class="container" style="max-width: 800px">
-      <div class="hero" style="margin-bottom: 2rem; padding: 2rem 0">
+    <main class="container container-narrow">
+      <div class="hero hero-sm">
         <h1>Verify Product Integrity</h1>
         <p>Check if a product's blockchain history has been tampered with</p>
       </div>
@@ -63,7 +64,7 @@
               placeholder="Enter product ID"
               required
             />
-            <small style="color: #666">Enter the product ID to verify</small>
+            <small class="text-secondary">Enter the product ID to verify</small>
           </div>
 
           <div class="alert alert-info">
@@ -135,14 +136,7 @@
 
       <div class="card mt-3">
         <h3><i class="fas fa-question-circle"></i> Why Verification Matters</h3>
-        <div
-          style="
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-          "
-        >
+        <div class="grid-responsive mt-3">
           <div>
             <h4><i class="fas fa-shield-alt"></i> Fraud Prevention</h4>
             <p>Prevents counterfeit products from entering the supply chain.</p>
@@ -161,14 +155,7 @@
       </div>
     </main>
 
-    <footer
-      style="
-        background-color: #2c3e50;
-        color: white;
-        padding: 1.5rem 0;
-        margin-top: 3rem;
-      "
-    >
+    <footer>
       <div class="container text-center">
         <a
           href="index.html"
@@ -177,7 +164,7 @@
         >
           <i class="fas fa-arrow-left"></i> Back to Dashboard
         </a>
-        <p style="margin-top: 1rem; opacity: 0.8">
+        <p class="mt-3">
           SupplyChain Blockchain System
         </p>
       </div>

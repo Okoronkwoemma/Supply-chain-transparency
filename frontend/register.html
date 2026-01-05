@@ -13,7 +13,9 @@
   <body>
     <nav class="navbar">
       <div class="container nav-container">
-        <a href="index.html" class="logo">Supply<span>Chain</span></a>
+        <a href="index.html" class="logo">
+          <i class="fas fa-cubes"></i> Supply<span>Chain</span>
+        </a>
 
         <ul class="nav-links">
           <li>
@@ -33,14 +35,13 @@
         </ul>
 
         <div class="user-info">
-          <span>Current Role:</span>
           <span class="role-badge">Manufacturer</span>
         </div>
       </div>
     </nav>
 
-    <main class="container" style="max-width: 800px">
-      <div class="hero" style="margin-bottom: 2rem; padding: 2rem 0">
+    <main class="container container-narrow">
+      <div class="hero hero-sm">
         <h1>Register New Product</h1>
         <p>Create a new product entry in the blockchain supply chain</p>
       </div>
@@ -119,7 +120,7 @@
             </div>
           </div>
 
-          <button onclick="handleRegister()" type="submit" class="btn btn-primary btn-block">
+          <button type="submit" class="btn btn-primary btn-block">
             <i class="fas fa-database"></i> Register on Blockchain
           </button>
         </form>
@@ -131,14 +132,7 @@
         <h3>
           <i class="fas fa-info-circle"></i> About Blockchain Registration
         </h3>
-        <div
-          style="
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-          "
-        >
+        <div class="grid-responsive mt-3">
           <div>
             <h4><i class="fas fa-fingerprint"></i> Unique Hash</h4>
             <p>
@@ -162,14 +156,7 @@
       </div>
     </main>
 
-    <footer
-      style="
-        background-color: #2c3e50;
-        color: white;
-        padding: 1.5rem 0;
-        margin-top: 3rem;
-      "
-    >
+    <footer>
       <div class="container text-center">
         <a
           href="index.html"
@@ -178,7 +165,7 @@
         >
           <i class="fas fa-arrow-left"></i> Back to Dashboard
         </a>
-        <p style="margin-top: 1rem; opacity: 0.8">
+        <p class="mt-3">
           SupplyChain Blockchain System
         </p>
       </div>

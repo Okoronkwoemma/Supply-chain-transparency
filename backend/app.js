@@ -11,13 +11,11 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname, "..", "frontend")));
 
-// 1. DATABASE CONNECTION
 mongoose
   .connect(process.env.MONGO_URI || "mongodb://localhost:27017/supply_chain")
   .then(() => console.log("Connected to Supply Chain Database"))
   .catch((err) => console.error("Database Connection Error:", err));
 
-// 2. UTILITY: Calculate SHA-256 Hash
 const calculateHash = (status, actor, timestamp, previousHash) => {
   const data = status + actor + timestamp + previousHash;
   return crypto.createHash("sha256").update(data).digest("hex");
@@ -26,10 +24,10 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "frontend", "index.html"));
 });
 
-// Get all products
+
 app.get("/products", async (req, res) => {
   try {
-    const products = await Product.find(); // fetch all products
+    const products = await Product.find().sort({ _id: -1 }); // Sort by newest first
     res.json(products);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -37,7 +35,6 @@ app.get("/products", async (req, res) => {
 });
 
 
-// 3. ROUTE: Register Product (Step 1: Manufactured)
 app.post("/register", async (req, res) => {
   try {
     const { name, manufacturer, role } = req.body;
@@ -78,7 +75,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// 4. ROUTE: Update Status (The Logic Layer)
+
 app.patch("/update-status/:id", async (req, res) => {
   try {
     const { nextStatus, actor, role } = req.body;
@@ -86,7 +83,7 @@ app.patch("/update-status/:id", async (req, res) => {
 
     if (!product) return res.status(404).json({ error: "Product not found" });
 
-    // Logic: Enforce Linear Supply Chain Flow
+ 
     const validNextStep = {
       Manufactured: "In Distribution",
       "In Distribution": "For Sale",
@@ -101,7 +98,7 @@ app.patch("/update-status/:id", async (req, res) => {
       });
     }
 
-    // Logic: Role Permission Enforcement
+
     if (nextStatus === "In Distribution" && role !== "Manufacturer")
       return res.status(403).json({ error: "Only Manufacturers can ship." });
     if (nextStatus === "For Sale" && role !== "Distributor")
@@ -109,7 +106,6 @@ app.patch("/update-status/:id", async (req, res) => {
         .status(403)
         .json({ error: "Only Distributors can list for sale." });
 
-    // Blockchain Logic: Link to previous entry
     const lastEntry = product.history[product.history.length - 1];
     const timestamp = new Date().toISOString();
     const newHash = calculateHash(nextStatus, actor, timestamp, lastEntry.hash);
@@ -130,7 +126,6 @@ app.patch("/update-status/:id", async (req, res) => {
   }
 });
 
-// 5. ROUTE: Verify Integrity (The Auditor)
 app.get("/verify/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
