@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify Product - SupplyChain</title>
+    <link rel="stylesheet" href="styles/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="container nav-container">
+        <a href="index.html" class="logo">
+          <i class="fas fa-cubes"></i> Supply<span>Chain</span>
+        </a>
+
+        <ul class="nav-links">
+          <li>
+            <a href="index.html"><i class="fas fa-home"></i> Dashboard</a>
+          </li>
+          <li>
+            <a href="register.html"
+              ><i class="fas fa-plus-circle"></i> Register</a
+            >
+          </li>
+          <li>
+            <a href="update.html"><i class="fas fa-sync-alt"></i> Update</a>
+          </li>
+          <li>
+            <a href="verify.html" class="active"
+              ><i class="fas fa-shield-alt"></i> Verify</a
+            >
+          </li>
+        </ul>
+
+        <div class="user-info">
+          <button
+            id="walletConnectBtn"
+            class="btn btn-primary disconnected"
+            style="padding: 0.5rem 1rem; font-size: 0.9rem"
+          >
+            Connect Wallet
+          </button>
+          <span class="role-badge">Manufacturer</span>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container container-narrow">
+      <div class="hero hero-sm">
+        <h1>Verify Product Integrity</h1>
+        <p>Check if a product's blockchain history has been tampered with</p>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">Verification Tool</h2>
+        <p class="mb-2">
+          Enter a product ID to verify its blockchain integrity.
+        </p>
+
+        <form id="verifyForm">
+          <div class="form-group">
+            <label class="form-label" for="verifyProductId">Product ID *</label>
+            <input
+              type="text"
+              id="verifyProductId"
+              class="form-control"
+              placeholder="Enter product ID"
+              required
+            />
+            <small class="text-secondary">Enter the product ID to verify</small>
+          </div>
+
+          <div class="alert alert-info">
+            <strong>How Verification Works:</strong>
+            <p>
+              The blockchain records all transaction hashes and ownership
+              history.
+            </p>
+            <p>
+              Verification confirms the product has not been tampered with
+              on-chain.
+            </p>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">
+            <i class="fas fa-search"></i> Verify Blockchain Integrity
+          </button>
+        </form>
+
+        <div id="verificationResult" class="hidden mt-2"></div>
+      </div>
+
+      <div class="card mt-3">
+        <h3><i class="fas fa-history"></i> Sample Blockchain History</h3>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <div class="timeline-status">Manufactured</div>
+              <div class="timeline-meta">
+                <i class="far fa-clock"></i> 2024-01-15 10:30:00 |
+                <i class="fas fa-user"></i> Manufacturer: TechCorp
+              </div>
+              <div class="timeline-hash">
+                Hash: a1b2c3d4e5f6... (linked to: 0)
+              </div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <div class="timeline-status">In Distribution</div>
+              <div class="timeline-meta">
+                <i class="far fa-clock"></i> 2024-01-20 14:45:00 |
+                <i class="fas fa-user"></i> Distributor: Logistics Inc.
+              </div>
+              <div class="timeline-hash">
+                Hash: f6e5d4c3b2a1... (linked to: a1b2c3d4e5f6...)
+              </div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <div class="timeline-status">For Sale</div>
+              <div class="timeline-meta">
+                <i class="far fa-clock"></i> 2024-01-25 09:15:00 |
+                <i class="fas fa-user"></i> Retailer: SuperStore
+              </div>
+              <div class="timeline-hash">
+                Hash: 1a2b3c4d5e6f... (linked to: f6e5d4c3b2a1...)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert alert-success mt-3">
+          <strong>Chain Integrity:</strong> All hashes are properly linked. No
+          tampering detected.
+        </div>
+      </div>
+
+      <div class="card mt-3">
+        <h3><i class="fas fa-question-circle"></i> Why Verification Matters</h3>
+        <div class="grid-responsive mt-3">
+          <div>
+            <h4><i class="fas fa-shield-alt"></i> Fraud Prevention</h4>
+            <p>Prevents counterfeit products from entering the supply chain.</p>
+          </div>
+          <div>
+            <h4><i class="fas fa-eye"></i> Transparency</h4>
+            <p>Any participant can verify the product's complete history.</p>
+          </div>
+          <div>
+            <h4>
+              <i class="fas fa-exclamation-triangle"></i> Tamper Detection
+            </h4>
+            <p>Immediately detects if any record has been altered.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <div class="container text-center">
+        <a
+          href="index.html"
+          class="btn btn-secondary"
+          style="margin-right: 1rem"
+        >
+          <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+        <p class="mt-3">SupplyChain Blockchain System</p>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+    <!-- Contract Configuration (must load before app.js) -->
+    <script src="js/contract_abi.js"></script>
+
+    <!-- DApp Logic (depends on Ethers.js and contract_abi.js) -->
+    <script src="js/app.js"></script>
+  </body>
+</html>
