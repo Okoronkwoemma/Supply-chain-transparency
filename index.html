@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SupplyChain Dashboard - Blockchain System</title>
+    <title>Verify Product - SupplyChain</title>
     <link rel="stylesheet" href="styles/styles.css" />
     <link
       rel="stylesheet"
@@ -11,174 +11,116 @@
     />
   </head>
   <body>
-    <!-- Navigation -->
     <nav class="navbar">
       <div class="container nav-container">
         <a href="index.html" class="logo">
           <i class="fas fa-cubes"></i> Supply<span>Chain</span>
         </a>
 
-        <ul class="nav-links">
-          <li>
-            <a href="index.html" class="active"
-              ><i class="fas fa-home"></i> Dashboard</a
-            >
-          </li>
-          <li>
-            <a href="register.html"
-              ><i class="fas fa-plus-circle"></i> Register</a
-            >
-          </li>
-          <li>
-            <a href="update.html"><i class="fas fa-sync-alt"></i> Update</a>
-          </li>
-          <li>
-            <a href="verify.html"><i class="fas fa-shield-alt"></i> Verify</a>
-          </li>
-        </ul>
-
-        <div class="user-info">
-          <button
-            id="walletConnectBtn"
-            class="btn btn-primary disconnected"
-            style="padding: 0.5rem 1rem; font-size: 0.9rem"
+        <div class="nav-center nav-links">
+          <a href="verify.html" class=".nav-links hover active"
+            ><i class="fas fa-shield-alt"></i> Verify</a
           >
-            Connect Wallet
-          </button>
-          <span class="role-badge">Manufacturer</span>
         </div>
+
+        <a href="login.html" class="btn btn-primary register-btn">
+          <i class="fas fa-plus-circle"></i> Register a Product
+        </a>
       </div>
     </nav>
 
-    <!-- Hero Section -->
-    <header class="hero">
-      <div class="container">
-        <h1>Blockchain Supply Chain System</h1>
-        <p>
-          Track products from manufacturer to consumer with immutable blockchain
-          records
-        </p>
+    <main class="container container-narrow">
+      <div class="hero hero-sm">
+        <h1>Verify Product Integrity</h1>
+        <p>Check if a product's blockchain history has been tampered with</p>
       </div>
-    </header>
 
-    <!-- Main Content -->
-    <main class="container">
-      <!-- Role Selector -->
-      <section class="card">
-        <h2 class="card-title">Select Your Role</h2>
-        <div class="role-selector">
-          <div class="role-option selected" data-role="Manufacturer">
-            <div class="role-icon">🏭</div>
-            <h3>Manufacturer</h3>
-            <p>Register products, ship to distribution</p>
-          </div>
-          <div class="role-option" data-role="Distributor">
-            <div class="role-icon">🚚</div>
-            <h3>Distributor</h3>
-            <p>Receive products, list for sale</p>
-          </div>
-          <div class="role-option" data-role="Retailer">
-            <div class="role-icon">🏪</div>
-            <h3>Retailer</h3>
-            <p>Sell products to consumers</p>
-          </div>
-        </div>
+      <div class="card">
+        <h2 class="card-title">Verification Tool</h2>
+        <p class="mb-2">
+          Enter a product ID to verify its blockchain integrity.
+        </p>
 
-        <div class="alert alert-info">
-          <strong>Current Role:</strong>
-          <span class="role-badge">Manufacturer</span>
-          <p>
-            Your permissions and available actions change based on your selected
-            role.
-          </p>
-        </div>
-      </section>
-
-      <!-- Quick Actions -->
-      <section class="card">
-        <h2 class="card-title">Quick Actions</h2>
-        <div class="grid-responsive" style="gap: 1rem">
-          <a href="register.html" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Register New Product
-          </a>
-          <a href="update.html" class="btn btn-secondary">
-            <i class="fas fa-edit"></i> Update Status
-          </a>
-          <a href="verify.html" class="btn btn-success">
-            <i class="fas fa-check-circle"></i> Verify Product
-          </a>
-        </div>
-      </section>
-
-      <!-- Recent Products -->
-      <section class="card">
-        <div class="card-header">
-          <h2 class="card-title">Recent Products</h2>
-          <div>
+        <form id="verifyForm">
+          <div class="form-group">
+            <label class="form-label" for="verifyProductId">Product ID *</label>
             <input
               type="text"
-              id="searchInput"
-              class="form-control search-input"
-              placeholder="Search products..."
+              id="verifyProductId"
+              class="form-control"
+              placeholder="Enter product ID"
+              required
             />
+            <small class="text-secondary">Enter the product ID to verify</small>
           </div>
-        </div>
 
-        <div class="products-grid" id="productList">
-          <!-- Products will be loaded by JavaScript -->
-        </div>
-
-        <div class="text-center mt-2">
-          <a href="#" class="btn btn-secondary">View All Products</a>
-        </div>
-      </section>
-
-      <!-- System Info -->
-      <section class="card">
-        <h2 class="card-title">How It Works</h2>
-        <div class="grid-responsive-lg mt-3">
-          <div>
-            <h3><i class="fas fa-link text-blue"></i> Blockchain Records</h3>
+          <div class="alert alert-info">
+            <strong>How Verification Works:</strong>
             <p>
-              Each product registration and status update is recorded on the
-              blockchain with an immutable transaction hash.
+              The blockchain records all transaction hashes and ownership
+              history.
+            </p>
+            <p>
+              Verification confirms the product has not been tampered with
+              on-chain.
             </p>
           </div>
-          <div>
-            <h3>
-              <i class="fas fa-wallet text-green"></i> MetaMask Integration
-            </h3>
-            <p>
-              Connect your MetaMask wallet to interact with the smart contract
-              directly on the blockchain.
-            </p>
+
+          <button type="submit" class="btn btn-primary btn-block">
+            <i class="fas fa-search"></i> Verify Blockchain Integrity
+          </button>
+        </form>
+
+        <div id="verificationResult" class="hidden mt-2"></div>
+      </div>
+
+      <div class="card mt-3">
+        <h3><i class="fas fa-history"></i> Sample Blockchain History</h3>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <div class="timeline-status">Manufactured</div>
+              <div class="timeline-meta">
+                <i class="far fa-clock"></i> 2024-01-15 10:30:00 |
+                <i class="fas fa-user"></i> Manufacturer: TechCorp
+              </div>
+              <div class="timeline-hash">
+                Hash: a1b2c3d4e5f6... (linked to: 0)
+              </div>
+            </div>
           </div>
-          <div>
-            <h3>
-              <i class="fas fa-search text-purple"></i> Tamper Verification
-            </h3>
-            <p>
-              The blockchain's immutability ensures records cannot be altered -
-              instant tamper detection.
-            </p>
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <div class="timeline-status">In Distribution</div>
+              <div class="timeline-meta">
+                <i class="far fa-clock"></i> 2024-01-20 14:45:00 |
+                <i class="fas fa-user"></i> Distributor: Logistics Inc.
+              </div>
+              <div class="timeline-hash">
+                Hash: f6e5d4c3b2a1... (linked to: a1b2c3d4e5f6...)
+              </div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content">
+              <div class="timeline-status">For Sale</div>
+              <div class="timeline-meta">
+                <i class="far fa-clock"></i> 2024-01-25 09:15:00 |
+                <i class="fas fa-user"></i> Retailer: SuperStore
+              </div>
+              <div class="timeline-hash">
+                Hash: 1a2b3c4d5e6f... (linked to: f6e5d4c3b2a1...)
+              </div>
+            </div>
           </div>
         </div>
-      </section>
+      </div>
     </main>
 
-    <!-- Footer -->
-    <footer>
-      <div class="container text-center">
-        <p>SupplyChain Blockchain System &copy; 2024</p>
-        <p>
-          For educational purposes - Demonstrates blockchain concepts in supply
-          chain management
-        </p>
-      </div>
-    </footer>
-
-    <!-- Ethers.js v5 Library -->
-    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 
     <!-- Contract Configuration (must load before app.js) -->
     <script src="js/contract_abi.js"></script>

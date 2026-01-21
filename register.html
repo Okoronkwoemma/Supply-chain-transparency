@@ -11,39 +11,21 @@
     />
   </head>
   <body>
-    <nav class="navbar">
+       <nav class="navbar">
       <div class="container nav-container">
         <a href="index.html" class="logo">
           <i class="fas fa-cubes"></i> Supply<span>Chain</span>
         </a>
 
-        <ul class="nav-links">
-          <li>
-            <a href="index.html"><i class="fas fa-home"></i> Dashboard</a>
-          </li>
-          <li>
-            <a href="register.html" class="active"
-              ><i class="fas fa-plus-circle"></i> Register</a
-            >
-          </li>
-          <li>
-            <a href="update.html"><i class="fas fa-sync-alt"></i> Update</a>
-          </li>
-          <li>
-            <a href="verify.html"><i class="fas fa-shield-alt"></i> Verify</a>
-          </li>
-        </ul>
-
-        <div class="user-info">
-          <button
-            id="walletConnectBtn"
-            class="btn btn-primary disconnected"
-            style="padding: 0.5rem 1rem; font-size: 0.9rem"
+        <div class="nav-center nav-links">
+          <a href="verify.html" class=".nav-links hover active"
+            ><i class="fas fa-shield-alt"></i> Verify</a
           >
-            Connect Wallet
-          </button>
-          <span class="role-badge">Manufacturer</span>
         </div>
+
+        <a href="login.html" class="btn btn-primary register-btn">
+          <i class="fas fa-plus-circle"></i> Register a Product
+        </a>
       </div>
     </nav>
 
@@ -51,6 +33,27 @@
       <div class="hero hero-sm">
         <h1>Register New Product</h1>
         <p>Create a new product entry in the blockchain supply chain</p>
+        <div
+          style="
+            margin-top: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: center;
+          "
+        >
+          <span
+            id="manufacturerName"
+            style="font-weight: 600; color: var(--primary)"
+          ></span>
+          <button
+            id="logoutBtn"
+            class="btn btn-secondary"
+            style="padding: 0.5rem 1rem; font-size: 0.9rem"
+          >
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
+        </div>
       </div>
 
       <div class="card">
@@ -136,31 +139,20 @@
       </div>
 
       <div class="card mt-3">
-        <h3>
-          <i class="fas fa-info-circle"></i> About Blockchain Registration
-        </h3>
-        <div class="grid-responsive mt-3">
-          <div>
-            <h4><i class="fas fa-fingerprint"></i> Unique Hash</h4>
-            <p>
-              Each product gets a unique cryptographic hash based on its initial
-              data.
-            </p>
-          </div>
-          <div>
-            <h4><i class="fas fa-lock"></i> Immutable Record</h4>
-            <p>
-              Once registered, the initial state cannot be altered or deleted.
-            </p>
-          </div>
-          <div>
-            <h4><i class="fas fa-link"></i> Chain Start</h4>
-            <p>
-              This creates the first link in the product's blockchain history.
+        <h3><i class="fas fa-list"></i> Registered Products</h3>
+        <p class="text-secondary" style="margin-bottom: 1.5rem">
+          Products you have registered in the blockchain system
+        </p>
+        <div id="productsListContainer">
+          <div class="text-center" style="padding: 2rem">
+            <p class="text-secondary">
+              No products registered yet. Register your first product above!
             </p>
           </div>
         </div>
       </div>
+
+      
     </main>
 
     <footer>
@@ -176,16 +168,137 @@
       </div>
     </footer>
 
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"
-      type="text/javascript"
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
     <!-- Contract Configuration (must load before app.js) -->
     <script src="js/contract_abi.js"></script>
 
     <!-- DApp Logic (depends on Ethers.js and contract_abi.js) -->
     <script src="js/app.js"></script>
+
+    <script>
+      // Authentication check
+      window.addEventListener("load", () => {
+        const auth = localStorage.getItem("manufacturerAuth");
+        if (!auth) {
+          window.location.href = "login.html";
+          return;
+        }
+
+        const userData = JSON.parse(auth);
+        document.getElementById("manufacturerName").textContent =
+          `${userData.companyName}`;
+        document.getElementById("manufacturer").value = userData.companyName;
+
+        // Load products for this manufacturer
+        loadProducts();
+      });
+
+      // Logout handler
+      document.getElementById("logoutBtn").addEventListener("click", () => {
+        if (confirm("Are you sure you want to logout?")) {
+          localStorage.removeItem("manufacturerAuth");
+          window.location.href = "login.html";
+        }
+      });
+
+      // Load and display registered products
+      function loadProducts() {
+        const productsKey =
+          "manufacturerProducts_" +
+          document.getElementById("manufacturerName").textContent;
+        const products = JSON.parse(localStorage.getItem(productsKey) || "[]");
+
+        const container = document.getElementById("productsListContainer");
+
+        if (products.length === 0) {
+          container.innerHTML = `
+            <div class="text-center" style="padding: 2rem">
+              <p class="text-secondary">No products registered yet. Register your first product above!</p>
+            </div>
+          `;
+          return;
+        }
+
+        let html = `
+          <div class="products-table" style="overflow-x: auto">
+            <table style="width: 100%; border-collapse: collapse">
+              <thead>
+                <tr style="border-bottom: 2px solid var(--gray-300); background-color: var(--gray-100)">
+                  <th style="padding: 1rem; text-align: left; font-weight: 600">Product Name</th>
+                  <th style="padding: 1rem; text-align: left; font-weight: 600">Type</th>
+                  <th style="padding: 1rem; text-align: left; font-weight: 600">Status</th>
+                  <th style="padding: 1rem; text-align: left; font-weight: 600">Registered</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+
+        products.forEach((product, index) => {
+          const date = new Date(product.timestamp).toLocaleDateString();
+          html += `
+            <tr style="border-bottom: 1px solid var(--gray-200); hover: background-color: var(--gray-50)">
+              <td style="padding: 1rem">${product.name}</td>
+              <td style="padding: 1rem">${product.type}</td>
+              <td style="padding: 1rem"><span style="background-color: var(--success); color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.85rem">Manufactured</span></td>
+              <td style="padding: 1rem">${date}</td>
+            </tr>
+          `;
+        });
+
+        html += `
+              </tbody>
+            </table>
+          </div>
+        `;
+
+        container.innerHTML = html;
+      }
+
+      // Override form submission to save products
+      const originalForm = document.getElementById("registerForm");
+      const originalSubmit = originalForm.onsubmit;
+
+      originalForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const productName = document.getElementById("productName").value;
+        const productType = document.getElementById("productType").value;
+        const manufacturerName = document.getElementById("manufacturer").value;
+
+        // Save to localStorage
+        const productsKey = "manufacturerProducts_" + manufacturerName;
+        const products = JSON.parse(localStorage.getItem(productsKey) || "[]");
+
+        products.unshift({
+          name: productName,
+          type: productType,
+          manufacturer: manufacturerName,
+          timestamp: new Date().toISOString(),
+          description: document.getElementById("description").value,
+        });
+
+        localStorage.setItem(productsKey, JSON.stringify(products));
+
+        // Show success message
+        const resultDiv = document.getElementById("registrationResult");
+        resultDiv.innerHTML = `
+          <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i> Product registered successfully!
+          </div>
+        `;
+        resultDiv.classList.remove("hidden");
+
+        // Reset form
+        originalForm.reset();
+        document.getElementById("manufacturer").value = manufacturerName;
+
+        // Reload products list
+        setTimeout(() => {
+          loadProducts();
+          resultDiv.classList.add("hidden");
+        }, 2000);
+      });
+    </script>
   </body>
 </html>

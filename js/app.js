@@ -21,11 +21,20 @@ async function initializeWeb3() {
 
 async function connectWallet() {
   try {
+    console.log("Attempting to connect wallet...", window);
+    if (!window.ethereum) {
+      alert("MetaMask is not installed. Please install it to continue.");
+      return false;
+    }
     await initializeWeb3();
     updateWalletUI();
+    alert("Wallet connected successfully!");
     return true;
-  } catch {
+  } catch (error) {
+    console.error("Connection error:", error);
+    alert("Failed to connect wallet: " + error.message);
     isConnected = false;
+    updateWalletUI();
     return false;
   }
 }
@@ -47,10 +56,12 @@ function updateWalletUI() {
   if (isConnected && currentAccount) {
     walletBtn.textContent = `${currentAccount.slice(0, 6)}...${currentAccount.slice(-4)}`;
     walletBtn.classList.add("connected");
+    walletBtn.classList.remove("disconnected");
     if (walletStatus) walletStatus.textContent = "Connected";
   } else {
     walletBtn.textContent = "Connect Wallet";
     walletBtn.classList.remove("connected");
+    walletBtn.classList.add("disconnected");
     if (walletStatus) walletStatus.textContent = "Disconnected";
   }
 }
@@ -78,13 +89,13 @@ async function registerProduct(name, manufacturer, productType, description) {
     description || "",
   );
 
-  const receipt = await tx.wait();
+  await tx.wait();
 
   if (btn) {
     btn.disabled = false;
     btn.textContent = "Register on Blockchain";
   }
-
+  window.location.href = "dashboard.html";
   return receipt.transactionHash;
 }
 
@@ -96,7 +107,8 @@ async function updateStatus(productId, newStatus, location, role) {
     location || "",
     role || "",
   );
-  const receipt = await tx.wait();
+  await tx.wait();
+  await loadProducts();
   return receipt.transactionHash;
 }
 
@@ -112,11 +124,10 @@ async function getCertificate(productId) {
 }
 
 async function getAllProducts() {
-  await ensureContractIsReady();
   const count = await contract.productCounter();
   const products = [];
 
-  for (let i = 1; i <= count; i++) {
+  for (let i = 0; i <= count; i++) {
     products.push(await contract.getProduct(i));
   }
 
@@ -135,13 +146,9 @@ async function verifyProduct(productId) {
 async function initPageWeb3() {
   if (!window.ethereum) return;
 
-  await initializeWeb3();
-  updateWalletUI();
-
-  window.ethereum.on("accountsChanged", () => window.location.reload());
-  window.ethereum.on("chainChanged", () => window.location.reload());
+  window.ethereum.on("accountsChanged", () => location.reload());
+  window.ethereum.on("chainChanged", () => location.reload());
 }
-
 const State = {
   getRole: () => localStorage.getItem("supplyChainRole") || "Manufacturer",
   setRole: (role) => {
@@ -266,5 +273,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   else initDashboard();
 
   const btn = document.getElementById("walletConnectBtn");
-  if (btn) btn.onclick = connectWallet;
+  if (btn) {
+    btn.onclick = async (e) => {
+      e.preventDefault();
+      console.log("Connect wallet button clicked");
+      await connectWallet();
+    };
+  } else {
+    console.warn("Wallet connect button not found in the DOM");
+  }
 });
