@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verify Product - SupplyChain</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/web3@4.4.0/dist/web3.min.js"></script>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+      "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+    }
+  }
+  </script>
+
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --secondary: #64748b;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --purple: #8b5cf6;
+      --dark: #0f172a;
+      --surface: #ffffff;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+      --radius: 8px;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      --font-sans: system-ui, -apple-system, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg);
+      color: var(--dark);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .navbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .nav-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: var(--dark);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo i {
+      color: var(--primary);
+    }
+
+    .nav-link {
+      color: var(--secondary);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 4rem 0 2rem;
+    }
+
+    .hero h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.025em;
+    }
+
+    .hero p {
+      color: var(--secondary);
+      font-size: 1.1rem;
+    }
+
+    .search-box {
+      background: var(--surface);
+      padding: 0.5rem;
+      border-radius: 50px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      display: flex;
+      margin-top: 2rem;
+      transition: 0.2s;
+    }
+
+    .search-box:focus-within {
+      transform: translateY(-2px);
+      border-color: var(--primary);
+    }
+
+    .search-input {
+      border: none;
+      flex: 1;
+      padding: 0.75rem 1.5rem;
+      font-size: 1.1rem;
+      outline: none;
+      border-radius: 50px;
+      color: var(--dark);
+    }
+
+    .search-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0 2rem;
+      border-radius: 50px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 1rem;
+    }
+
+    .search-btn:hover {
+      background: var(--primary-hover);
+    }
+
+    .result-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 2rem;
+      margin-top: 2rem;
+      animation: slideUp 0.4s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .product-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .verified-badge {
+      background: #ecfdf5;
+      color: #059669;
+      padding: 0.5rem 1rem;
+      border-radius: 99px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: 1px solid #d1fae5;
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 2rem;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+      border-radius: 2px;
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 2.5rem;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: -2.6rem;
+      top: 0;
+      width: 20px;
+      height: 20px;
+      background: var(--surface);
+      border: 3px solid var(--border);
+      border-radius: 50%;
+      z-index: 2;
+    }
+
+    .timeline-item.active .timeline-dot {
+      border-color: var(--primary);
+      background: var(--primary);
+      box-shadow: 0 0 0 4px #eff6ff;
+    }
+
+    .timeline-content {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+    }
+
+    .timeline-title {
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .timeline-date {
+      font-size: 0.85rem;
+      color: var(--secondary);
+      margin-bottom: 0.75rem;
+    }
+
+    .partner-info {
+      font-size: 0.9rem;
+      color: var(--dark);
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      background: #fff;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .hash-box {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+      color: var(--secondary);
+      word-break: break-all;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .icon-manufactured {
+      color: var(--primary);
+    }
+
+    .icon-distribution {
+      color: var(--warning);
+    }
+
+    .icon-retail {
+      color: var(--purple);
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 2rem 0;
+      text-align: center;
+      color: var(--secondary);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="logo">
+        <i class="fas fa-cubes"></i> Supply<span>Chain</span>
+      </a>
+      <a href="login.html" class="nav-link">Login <i class="fas fa-sign-in-alt"></i></a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="hero">
+      <h1>Verify Product Authenticity</h1>
+      <p>Enter a Product ID to view its complete, immutable history on the blockchain.</p>
+
+      <form id="verifyForm" class="search-box">
+        <input type="text" id="verifyProductId" class="search-input" placeholder="e.g. 104" required />
+        <button type="submit" class="search-btn"><i class="fas fa-search"></i> Verify</button>
+      </form>
+    </div>
+
+    <div id="resultArea" class="hidden">
+      <div class="result-card">
+        <div class="product-header">
+          <div>
+            <h2 id="displayProductName" style="font-size: 1.5rem; margin-bottom: 0.25rem;">---</h2>
+            <p id="displayProductId" style="color: var(--secondary);">Product ID: #---</p>
+          </div>
+          <div class="verified-badge"><i class="fas fa-check-circle"></i> Authenticated</div>
+        </div>
+
+        <div class="timeline" id="timelineContainer">
+        </div>
+      </div>
+      <div style="text-align: center; margin-top: 2rem; color: var(--secondary); font-size: 0.85rem;">
+        <i class="fas fa-lock"></i> Secured by Ethereum Blockchain
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 SupplyChain System. Trust through transparency.</p>
+  </footer>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { fetchProductDetails } from './blockchain.js';
+    import { collection, query, where, getDocs } from "firebase/firestore";
+
+    const form = document.getElementById('verifyForm');
+    const resultArea = document.getElementById('resultArea');
+    const searchBtn = form.querySelector('button');
+    const productInput = document.getElementById('verifyProductId');
+
+    // Helper: Fetch Partner Name from Firestore by Wallet Address
+    async function getPartnerName(address) {
+      try {
+        const q = query(collection(db, "users"), where("walletAddress", "==", address));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          return snap.docs[0].data().name;
+        }
+        return "Unknown Partner";
+      } catch (e) {
+        console.error("Firestore lookup error:", e);
+        return "Verified Node";
+      }
+    }
+
+    // Helper: Fetch original manufacturer from the product record
+    async function getManufacturerName(code) {
+      try {
+        const q = query(collection(db, "products"), where("productCode", "==", code));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          return snap.docs[0].data().name || "Original Factory";
+        }
+        return "Registered Manufacturer";
+      } catch (e) {
+        return "Authorized Factory";
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const productId = productInput.value.trim();
+
+      searchBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Checking Chain...';
+      searchBtn.disabled = true;
+
+      try {
+        const product = await fetchProductDetails(productId);
+
+        if (product && product.owner !== "0x0000000000000000000000000000000000000000") {
+          await renderProductData(productId, product);
+          resultArea.classList.remove('hidden');
+          resultArea.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          alert("Product ID not found on the blockchain.");
+          resultArea.classList.add('hidden');
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Error connecting to blockchain.");
+      } finally {
+        searchBtn.innerHTML = '<i class="fas fa-search"></i> Verify';
+        searchBtn.disabled = false;
+      }
+    });
+
+    async function renderProductData(id, data) {
+      document.getElementById('displayProductName').innerText = data.name;
+      document.getElementById('displayProductId').innerText = `Product ID: #${id}`;
+
+      const timeline = document.getElementById('timelineContainer');
+      timeline.innerHTML = '';
+
+      // Data retrieval for partner names
+      const manufacturerName = await getManufacturerName(id);
+      const currentOwnerName = await getPartnerName(data.owner);
+
+      const stages = [
+        { label: "Manufactured", icon: "industry icon-manufactured", stateVal: 0, defaultName: manufacturerName },
+        { label: "In Distribution", icon: "truck icon-distribution", stateVal: 2, defaultName: "Authorized Distributor" },
+        { label: "At Retail Store", icon: "store icon-retail", stateVal: 3, defaultName: "Registered Retailer" }
+      ];
+
+      for (const stage of stages) {
+        const isActive = data.state >= stage.stateVal;
+        if (isActive) {
+          // If this is the current stage, use the real name from blockchain owner
+          const isCurrentStage = (data.state === stage.stateVal);
+          const partnerName = isCurrentStage ? currentOwnerName : stage.defaultName;
+
+          timeline.innerHTML += `
+            <div class="timeline-item active">
+              <div class="timeline-dot"></div>
+              <div class="timeline-content">
+                <div class="timeline-title">
+                  <i class="fas fa-${stage.icon}"></i> ${stage.label}
+                </div>
+                <div class="timeline-date">${isCurrentStage ? data.timestamp : 'Verified Milestone'}</div>
+                <div class="partner-info">
+                  <i class="fas fa-check-circle" style="color:var(--success)"></i>
+                  <strong>${partnerName}</strong>
+                </div>
+                <div class="hash-box">
+                   On-Chain Address: ${isCurrentStage ? data.owner : 'Authorized Wallet'}
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      }
+    }
+  </script>
+</body>
+
+</html>

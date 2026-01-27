@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Partner Portal - SupplyChain</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@4.4.0/dist/web3.min.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+        }
+    }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #64748b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --dark: #0f172a;
+            --border: #e2e8f0;
+            --radius: 8px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f1f5f9;
+            padding: 2rem;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .card {
+            background: #fff;
+            padding: 2rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* State Colors */
+        .status-0 {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        /* Manufactured */
+        .status-2 {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        /* Distributor */
+        .status-3 {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        /* Retailer */
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 1rem 0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:disabled {
+            background: var(--secondary);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .btn-logout {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        .btn-logout:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .result-box,
+        .error-box {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            display: none;
+        }
+
+        .nav-links {
+            margin-top: 1.5rem;
+            text-align: center;
+            border-top: 1px solid var(--border);
+            padding-top: 1rem;
+        }
+
+        .nav-links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="card">
+            <div class="header-flex">
+                <div>
+                    <h2><i class="fas fa-shipping-fast"></i> <span id="roleTitle">Partner</span> Portal</h2>
+                    <p style="font-size: 0.9rem; color: var(--secondary); margin-top: 5px;">
+                        Logged in as: <strong id="userEmail">...</strong>
+                    </p>
+                </div>
+                <button id="logoutBtn" class="btn btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+
+            <hr style="margin: 1.5rem 0; border: 0; border-top: 1px solid var(--border);">
+
+            <h3>Track & Receive Product</h3>
+            <p style="font-size: 0.85rem; color: var(--secondary);">Verify the product ID on the blockchain before
+                accepting the shipment.</p>
+
+            <input type="text" id="productCode" class="form-control" placeholder="Enter Product ID (e.g. BATCH-001)">
+            <button class="btn btn-primary" id="checkBtn">
+                <i class="fas fa-search"></i> Verify Product History
+            </button>
+
+            <div id="errorBox" class="error-box" style="text-align:center;">
+                <i class="fas fa-box-open fa-3x" style="color: var(--border); margin-bottom: 10px;"></i>
+                <h4>No Blockchain Record Found</h4>
+                <p style="color: var(--secondary);">This ID has not been registered on the network.</p>
+            </div>
+
+            <div id="resultBox" class="result-box">
+                <h4 style="margin-bottom: 1rem;">Blockchain Verification Result</h4>
+                <div
+                    style="background: #f8fafc; padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border);">
+                    <p style="margin-bottom: 8px;"><strong>Product:</strong> <span id="resName"></span></p>
+                    <p style="margin-bottom: 8px;"><strong>Current Owner:</strong> <br><small id="resOwner"
+                            style="font-family: monospace; color: var(--primary);"></small></p>
+                    <p style="margin-bottom: 8px;"><strong>Last Updated:</strong> <span id="resTime"></span></p>
+                    <p style="margin-bottom: 0;"><strong>Status:</strong> <span id="resStatus"
+                            class="status-badge"></span></p>
+                </div>
+
+                <button id="receiveBtn" class="btn btn-primary" style="margin-top: 1.5rem; background: var(--success);">
+                    <i class="fas fa-check-double"></i> Confirm Receipt & Take Ownership
+                </button>
+            </div>
+
+            <div class="nav-links">
+                <!-- <a href="partner-inventory.html">
+                    <i class="fas fa-boxes"></i> View My Claimed Products
+                </a> -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { onAuthStateChanged, signOut } from "firebase/auth";
+        import { doc, getDoc, collection, query, where, getDocs, updateDoc } from "firebase/firestore";
+        import { fetchProductDetails, updateProductStatus } from './blockchain.js';
+
+        let userProfile = null;
+        const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+        // 1. Auth & Profile Sync
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const docSnap = await getDoc(doc(db, "users", user.uid));
+                userProfile = docSnap.data();
+                document.getElementById('userEmail').innerText = user.email;
+                document.getElementById('roleTitle').innerText = userProfile.role;
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        // 2. Search Blockchain & Handle Double-Claim Logic
+        document.getElementById('checkBtn').onclick = async () => {
+            const code = document.getElementById('productCode').value.trim();
+            const resultBox = document.getElementById('resultBox');
+            const errorBox = document.getElementById('errorBox');
+            const receiveBtn = document.getElementById('receiveBtn');
+
+            if (!code) return alert("Please enter a code");
+
+            resultBox.style.display = "none";
+            errorBox.style.display = "none";
+            receiveBtn.disabled = false;
+            receiveBtn.innerHTML = '<i class="fas fa-check-double"></i> Confirm Receipt & Take Ownership';
+
+            const data = await fetchProductDetails(code);
+
+            if (data && data.owner !== ZERO_ADDRESS) {
+                document.getElementById('resName').innerText = data.name;
+                document.getElementById('resOwner').innerText = data.owner;
+                document.getElementById('resTime').innerText = data.timestamp;
+
+                const statusMap = ["Manufactured", "Shipped", "Received by Distributor", "Received by Retailer"];
+                const statusEl = document.getElementById('resStatus');
+                statusEl.innerText = statusMap[data.state] || "Unknown";
+                statusEl.className = `status-badge status-${data.state}`;
+
+                // --- DOUBLE CLAIM PREVENTION LOGIC ---
+                const myWallet = userProfile.walletAddress.toLowerCase();
+                const currentOnChainOwner = data.owner.toLowerCase();
+
+                // If user is already the owner
+                if (myWallet === currentOnChainOwner) {
+                    receiveBtn.disabled = true;
+                    receiveBtn.innerHTML = '<i class="fas fa-ban"></i> You already own this product';
+                }
+
+                // If product is already further ahead in the chain
+                const isDistributor = userProfile.role === "Distributor";
+                if ((isDistributor && data.state >= 2) || (!isDistributor && data.state >= 3)) {
+                    receiveBtn.disabled = true;
+                    receiveBtn.innerText = "Product already processed for this role.";
+                }
+
+                resultBox.style.display = "block";
+                receiveBtn.onclick = () => handleReceipt(code);
+            } else {
+                errorBox.style.display = "block";
+            }
+        };
+
+        // 3. Update Blockchain & Firestore
+        async function handleReceipt(code) {
+            try {
+                const wallet = userProfile.walletAddress;
+                const newState = (userProfile.role === "Distributor") ? 2 : 3;
+
+                alert("Please confirm transaction in Ganache...");
+                await updateProductStatus(code, newState, wallet);
+
+                // Update Firestore reference for the Inventory page
+                const q = query(collection(db, "products"), where("productCode", "==", code));
+                const snap = await getDocs(q);
+                if (!snap.empty) {
+                    await updateDoc(snap.docs[0].ref, {
+                        currentOwnerUid: auth.currentUser.uid,
+                        status: (userProfile.role === "Distributor") ? "With Distributor" : "With Retailer",
+                        lastUpdated: new Date().toISOString()
+                    });
+                }
+
+                alert("Ownership successfully transferred on-chain!");
+                window.location.href = "partner-inventory.html";
+            } catch (err) {
+                alert("Blockchain Error: " + err.message);
+            }
+        }
+
+        document.getElementById('logoutBtn').onclick = () => signOut(auth);
+    </script>
+</body>
+
+</html>

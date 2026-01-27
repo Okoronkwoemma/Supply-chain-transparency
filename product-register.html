@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <script src="https://cdn.jsdelivr.net/npm/web3@4.4.0/dist/web3.min.js"></script>
+  <script type="module" src="blockchain.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+      "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+    }
+  }
+</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - SupplyChain</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+    /* --- SHARED VARIABLES (Matches Login Page) --- */
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --secondary: #64748b;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --dark: #0f172a;
+      --light: #f8fafc;
+      --border: #e2e8f0;
+      --surface: #ffffff;
+      --radius: 8px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      --font-sans: system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: #f1f5f9;
+      color: var(--dark);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* --- NAVBAR --- */
+    .navbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    .nav-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: var(--dark);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo i,
+    .logo span {
+      color: var(--primary);
+    }
+
+    .nav-links a {
+      color: var(--secondary);
+      text-decoration: none;
+      font-weight: 500;
+      margin: 0 1rem;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--primary);
+    }
+
+    /* --- LAYOUT --- */
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 2rem 0;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--surface);
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+    }
+
+    /* --- CARDS & FORMS --- */
+    .grid-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    @media(min-width: 900px) {
+      .grid-layout {
+        grid-template-columns: 350px 1fr;
+      }
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      padding: 1.5rem;
+      border: 1px solid var(--border);
+      height: fit-content;
+    }
+
+    .card-header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      color: var(--secondary);
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.625rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.95rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .form-control[readonly] {
+      background-color: #f8fafc;
+      color: var(--secondary);
+      cursor: not-allowed;
+    }
+
+    /* --- BUTTONS --- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1.25rem;
+      border-radius: 6px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      width: 100%;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--secondary);
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--danger);
+      color: var(--danger);
+      background: #fff;
+    }
+
+    /* --- DATA TABLE --- */
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    th {
+      text-align: left;
+      padding: 1rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--secondary);
+      border-bottom: 2px solid var(--border);
+      font-weight: 700;
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--dark);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background-color: #f8fafc;
+    }
+
+    /* --- BADGES --- */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-success {
+      background: #ecfdf5;
+      color: #059669;
+    }
+
+    /* --- ALERTS --- */
+    .alert {
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+
+    .alert-info {
+      background: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #dbeafe;
+    }
+
+    .alert-success {
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #d1fae5;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .mt-4 {
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="logo">
+        <i class="fas fa-cubes"></i> Supply<span>Chain</span>
+      </a>
+      <div class="nav-links">
+        <a href="verify.html"><i class="fas fa-search"></i> Verify Product</a>
+        <a href="#" class="active"><i class="fas fa-plus-circle"></i> Register</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+
+    <div class="dashboard-header">
+      <div>
+        <h1 style="font-size: 1.5rem; font-weight: 800;">Dashboard</h1>
+        <p style="color: var(--secondary); font-size: 0.95rem;">Manage your product registrations</p>
+      </div>
+
+      <div class="user-profile">
+        <div class="user-avatar"><i class="fas fa-user"></i></div>
+        <div>
+          <span id="manufacturerName" style="font-weight: 600; font-size: 0.9rem; display: block;">Loading...</span>
+          <span style="font-size: 0.75rem; color: var(--secondary);">Manufacturer</span>
+        </div>
+        <button id="logoutBtn" class="btn btn-outline" style="margin-left: 0.5rem;" title="Logout">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="grid-layout">
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title"><i class="fas fa-pen-fancy" style="color: var(--primary)"></i> Register Product</h2>
+        </div>
+
+        <form id="registerForm">
+          <div class="form-group">
+            <label class="form-label">Manufacturer ID</label>
+            <input type="text" id="manufacturer" class="form-control" readonly />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="productName">Product Name</label>
+            <input type="text" id="productName" class="form-control" placeholder="e.g. Wireless Headphones" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="productType">Category</label>
+            <div style="position: relative;">
+              <select id="productType" class="form-control" style="appearance: none;">
+                <option value="Electronics">Electronics</option>
+                <option value="Clothing">Clothing</option>
+                <option value="Food">Food & Beverages</option>
+                <option value="Pharmaceuticals">Pharmaceuticals</option>
+                <option value="Other">Other</option>
+              </select>
+              <i class="fas fa-chevron-down"
+                style="position: absolute; right: 1rem; top: 1rem; color: var(--secondary); pointer-events: none; font-size: 0.8rem;"></i>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="description">Description</label>
+            <textarea id="description" class="form-control" rows="3"
+              placeholder="Batch number, details, etc."></textarea>
+          </div>
+
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle" style="margin-top: 2px;"></i>
+            <div>
+              <strong>Blockchain Note:</strong><br>
+              Registration creates an immutable record with status "Manufactured".
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Write to Blockchain
+          </button>
+        </form>
+
+        <div id="registrationResult" class="hidden" style="margin-top: 1rem;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title"><i class="fas fa-list" style="color: var(--secondary)"></i> Recent Registrations</h2>
+        </div>
+
+        <div id="productsListContainer">
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="js/contract_abi.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    // --- AUTHENTICATION CHECK ---
+    window.addEventListener("load", () => {
+      const auth = localStorage.getItem("manufacturerAuth");
+      if (!auth) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      const userData = JSON.parse(auth);
+
+      // Populate UI
+      document.getElementById("manufacturerName").textContent = userData.companyName;
+      document.getElementById("manufacturer").value = userData.companyName;
+
+      // Load Data
+      loadProducts();
+    });
+
+    // --- LOGOUT LOGIC ---
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      if (confirm("End your session?")) {
+        localStorage.removeItem("manufacturerAuth");
+        window.location.href = "login.html";
+      }
+    });
+
+    // --- PRODUCT LOADER ---
+    function loadProducts() {
+      const manufacturerName = document.getElementById("manufacturer").value;
+      const productsKey = "manufacturerProducts_" + manufacturerName;
+      const products = JSON.parse(localStorage.getItem(productsKey) || "[]");
+      const container = document.getElementById("productsListContainer");
+
+      if (products.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 3rem 1rem;">
+              <div style="background: #f1f5f9; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto;">
+                <i class="fas fa-box-open" style="color: var(--secondary); font-size: 1.5rem;"></i>
+              </div>
+              <h3 style="font-size: 1rem; color: var(--dark);">No products yet</h3>
+              <p style="color: var(--secondary); font-size: 0.9rem;">Fill out the form to register your first item.</p>
+            </div>
+          `;
+        return;
+      }
+
+      let html = `
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+
+      products.forEach((product) => {
+        const date = new Date(product.timestamp).toLocaleDateString();
+        // Adding FontAwesome icon based on category for visual flair
+        let icon = "box";
+        if (product.type === "Electronics") icon = "microchip";
+        if (product.type === "Clothing") icon = "tshirt";
+        if (product.type === "Food") icon = "utensils";
+
+        html += `
+            <tr>
+              <td>
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <div style="width: 32px; height: 32px; background: #eff6ff; color: var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">
+                    <i class="fas fa-${icon}"></i>
+                  </div>
+                  <div>
+                    <div style="font-weight: 600; color: var(--dark);">${product.name}</div>
+                    <div style="font-size: 0.75rem; color: var(--secondary);">ID: ${Math.floor(Math.random() * 10000)}</div>
+                  </div>
+                </div>
+              </td>
+              <td style="color: var(--secondary); font-size: 0.9rem;">${product.type}</td>
+              <td><span class="badge badge-success">Manufactured</span></td>
+              <td style="color: var(--secondary); font-size: 0.85rem;">${date}</td>
+            </tr>
+          `;
+      });
+
+      html += `</tbody></table></div>`;
+      container.innerHTML = html;
+    }
+
+    // --- FORM SUBMISSION ---
+    const originalForm = document.getElementById("registerForm");
+
+    originalForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const productName = document.getElementById("productName").value;
+      const productType = document.getElementById("productType").value;
+      const manufacturerName = document.getElementById("manufacturer").value;
+      const description = document.getElementById("description").value;
+
+      // Save to localStorage
+      const productsKey = "manufacturerProducts_" + manufacturerName;
+      const products = JSON.parse(localStorage.getItem(productsKey) || "[]");
+
+      products.unshift({
+        name: productName,
+        type: productType,
+        manufacturer: manufacturerName,
+        timestamp: new Date().toISOString(),
+        description: description,
+      });
+
+      localStorage.setItem(productsKey, JSON.stringify(products));
+
+      // UI Feedback
+      const resultDiv = document.getElementById("registrationResult");
+      resultDiv.innerHTML = `
+          <div class="alert alert-success">
+            <i class="fas fa-check-circle" style="margin-top: 2px;"></i>
+            <div>
+              <strong>Success!</strong><br>
+              Product registered on local ledger.
+            </div>
+          </div>
+        `;
+      resultDiv.classList.remove("hidden");
+
+      // Reset and Reload
+      originalForm.reset();
+      document.getElementById("manufacturer").value = manufacturerName; // Keep this populated
+      loadProducts();
+
+      setTimeout(() => {
+        resultDiv.classList.add("hidden");
+      }, 3000);
+    });
+  </script>
+</body>
+
+</html>

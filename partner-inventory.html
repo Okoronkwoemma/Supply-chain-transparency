@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>My Inventory - SupplyChain</title>
+    <script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+        }
+    }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        :root {
+            --primary: #2563eb;
+            --border: #e2e8f0;
+            --radius: 12px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            padding: 2rem;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .inventory-table th,
+        .inventory-table td {
+            padding: 1.25rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .inventory-table th {
+            background: #f1f5f9;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .status-pill {
+            padding: 0.3rem 0.8rem;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            background: #dbeafe;
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        .btn-back {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1 style="margin:0;">My Claimed Inventory</h1>
+                <p style="color:var(--secondary); margin:5px 0 0;">Items you have officially received on the blockchain.
+                </p>
+            </div>
+            <a href="logistics-dashboard.html" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Back to Portal
+            </a>
+        </div>
+
+        <table class="inventory-table">
+            <thead>
+                <tr>
+                    <th>Product Code</th>
+                    <th>Product Name</th>
+                    <th>Status</th>
+                    <th>Date Received</th>
+                    <th>History</th>
+                </tr>
+            </thead>
+            <tbody id="inventoryBody">
+                <tr>
+                    <td colspan="5" style="text-align:center; padding: 3rem; color: var(--secondary);">Loading your
+                        inventory...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { onAuthStateChanged } from "firebase/auth";
+        import { collection, query, where, getDocs } from "firebase/firestore";
+
+        const inventoryBody = document.getElementById('inventoryBody');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Fetch only products where currentOwnerUid matches the user
+                const q = query(collection(db, "products"), where("currentOwnerUid", "==", user.uid));
+                const querySnapshot = await getDocs(q);
+
+                inventoryBody.innerHTML = '';
+
+                if (querySnapshot.empty) {
+                    inventoryBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 3rem; color: var(--secondary);">No products claimed yet. Use the portal to receive items.</td></tr>';
+                    return;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const p = doc.data();
+                    inventoryBody.innerHTML += `
+                        <tr>
+                            <td><code style="background:#f1f5f9; padding:2px 5px; border-radius:4px;">#${p.productCode}</code></td>
+                            <td><strong>${p.name}</strong></td>
+                            <td><span class="status-pill">${p.status || 'Received'}</span></td>
+                            <td>${p.lastUpdated ? new Date(p.lastUpdated).toLocaleDateString() : 'N/A'}</td>
+                            <td>
+                                <a href="verify.html?id=${p.productCode}" style="color:var(--primary); text-decoration:none; font-size:0.9rem;">
+                                    <i class="fas fa-history"></i> Track
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+    </script>
+</body>
+
+</html>

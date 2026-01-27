@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>My Inventory - SupplyChain</title>
+    <script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+        }
+    }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        :root {
+            --primary: #2563eb;
+            --border: #e2e8f0;
+            --radius: 12px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .inventory-table th,
+        .inventory-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .inventory-table th {
+            background: #f1f5f9;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .status-pill {
+            padding: 0.25rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #d1fae5;
+        }
+
+        .btn-back {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <a href="manufacturer-dashboard.html" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Factory</a>
+            <h1>My Manufactured Products</h1>
+        </div>
+
+        <table class="inventory-table">
+            <thead>
+                <tr>
+                    <th>Product Code</th>
+                    <th>Product Name</th>
+                    <th>Date Manufactured</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="inventoryBody">
+            </tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { onAuthStateChanged } from "firebase/auth";
+        import { collection, query, where, getDocs } from "firebase/firestore";
+
+        const inventoryBody = document.getElementById('inventoryBody');
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Fetch only products belonging to THIS manufacturer
+                const q = query(collection(db, "products"), where("manufacturerUid", "==", user.uid));
+                const querySnapshot = await getDocs(q);
+
+                inventoryBody.innerHTML = ''; // Clear loading state
+
+                if (querySnapshot.empty) {
+                    inventoryBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No products found. Start manufacturing!</td></tr>';
+                    return;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const p = doc.data();
+                    const row = `
+                    <tr>
+                        <td><strong>#${p.productCode}</strong></td>
+                        <td>${p.name}</td>
+                        <td>${new Date(p.createdAt).toLocaleDateString()}</td>
+                        <td><span class="status-pill">On Blockchain</span></td>
+                        <td>
+                            <a href="verify.html?id=${p.productCode}" style="color:var(--primary); text-decoration:none;">
+                                <i class="fas fa-external-link-alt"></i> Verify
+                            </a>
+                        </td>
+                    </tr>
+                `;
+                    inventoryBody.insertAdjacentHTML('beforeend', row);
+                });
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+    </script>
+</body>
+
+</html>
