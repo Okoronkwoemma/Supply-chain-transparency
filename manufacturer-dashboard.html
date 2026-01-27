@@ -188,9 +188,9 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h2 style="margin:0;"><i class="fas fa-plus-circle" style="color:var(--primary);"></i> Register New
                     Product</h2>
-                <!-- <a href="manufacturer-inventory.html" class="btn btn-outline">
+                <a href="manufacturer-inventory.html" class="btn btn-outline">
                     <i class="fas fa-boxes"></i> View My Products
-                </a> -->
+                </a>
             </div>
 
             <form id="manufactureForm">
@@ -268,34 +268,29 @@
 
             const name = document.getElementById('prodName').value;
             const code = document.getElementById('prodCode').value;
-
+            // manufacturer_dashboard.html
             try {
                 submitBtn.disabled = true;
                 transactionLoader.style.display = "block";
 
+                // 1. Blockchain call
                 await createProduct(name, code, activeWallet);
-                try {
-                    // 1. Blockchain Transaction
-                    await createProduct(name, code, activeWallet);
 
-                    // 2. NEW: Save to Firestore for the Inventory Page
-                    await addDoc(collection(db, "products"), {
-                        productCode: code,
-                        name: name,
-                        manufacturer: activeWallet,
-                        manufacturerUid: auth.currentUser.uid,
-                        createdAt: new Date().toISOString()
-                    });
+                // 2. Firestore call
+                await addDoc(collection(db, "products"), {
+                    productCode: code,
+                    name: name,
+                    manufacturer: activeWallet.toLowerCase(), // Save as lowercase for easier searching
+                    manufacturerUid: auth.currentUser.uid,
+                    createdAt: new Date().toISOString()
+                });
 
-                    alert("Product Registered on Blockchain and saved to Inventory!");
-                } catch (err) {
-                    alert("Error saving to Firestore: " + err.message);
-                }
-
-                alert("Product Successfully Registered on Blockchain!");
+                alert("Registration Successful! Product is now immutable on the Blockchain.");
                 manufactureForm.reset();
+
             } catch (err) {
-                alert("Blockchain Error: " + err.message);
+                console.error(err);
+                alert("System Error: " + err.message);
             } finally {
                 submitBtn.disabled = false;
                 transactionLoader.style.display = "none";

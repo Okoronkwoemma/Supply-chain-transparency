@@ -362,14 +362,26 @@
     const productInput = document.getElementById('verifyProductId');
 
     // Helper: Fetch Partner Name from Firestore by Wallet Address
+    // index.html -> update this function
     async function getPartnerName(address) {
       try {
-        const q = query(collection(db, "users"), where("walletAddress", "==", address));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          return snap.docs[0].data().name;
+        // Standardize to lowercase for searching
+        const searchAddress = address.toLowerCase();
+        const q = query(collection(db, "users"), where("walletAddress", "==", searchAddress));
+
+        // Also try a direct match just in case your DB has mixed case
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          return querySnapshot.docs[0].data().name;
         }
-        return "Unknown Partner";
+
+        // Secondary attempt for exact case match if lowercase fails
+        const q2 = query(collection(db, "users"), where("walletAddress", "==", address));
+        const snap2 = await getDocs(q2);
+        if (!snap2.empty) return snap2.docs[0].data().name;
+
+        return "Verified Partner";
       } catch (e) {
         console.error("Firestore lookup error:", e);
         return "Verified Node";

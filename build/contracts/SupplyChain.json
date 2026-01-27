@@ -12185,12 +12185,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x5308d0407a8f5aF379aD1dAd3d10F66a64b69370",
-      "transactionHash": "0xd6f00d0827fc19facc16c6f35cfb57bf3d60c1b64cd7a037e100db11dfae63b2"
+      "address": "0xDd6C8416fb19B73dFF1b1e918A91D329b7CA69Fc",
+      "transactionHash": "0x6dbf89fec67f584e3d0a454be8d40c5101f2d35098aa7bb6440a7394d2bd2f41"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2026-01-27T10:28:33.181Z",
+  "updatedAt": "2026-01-27T18:34:37.389Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
